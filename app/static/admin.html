@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Access Control | Face Recognition System</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    .admin-container {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    .enrollment-box {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 1.5rem;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .form-group label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .form-input {
+      background: rgba(2, 6, 23, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #fff;
+      padding: 0.65rem 0.85rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: var(--cyan-primary);
+      box-shadow: 0 0 10px var(--cyan-glow);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">🛡️</div>
+      <div>
+        <div class="brand-title">SMART ACCESS CONTROL</div>
+        <div class="brand-sub">Security Administration & Audit Dashboard</div>
+      </div>
+    </div>
+    <nav class="nav-links">
+      <a href="/" class="nav-btn"><span>🚪</span> Access Control</a>
+      <a href="/admin" class="nav-btn active"><span>📊</span> Admin & Audit Logs</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="admin-container">
+      
+      <!-- Metrics Overview -->
+      <section class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Verification Scans</div>
+          <div class="stat-num" id="stat-total">0</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">All optical scans recorded</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Access Granted</div>
+          <div class="stat-num" style="color: var(--emerald-success);" id="stat-granted">0</div>
+          <div style="font-size: 0.75rem; color: var(--emerald-success);">Verified personnel entries</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Access Denied</div>
+          <div class="stat-num" style="color: var(--crimson-danger);" id="stat-denied">0</div>
+          <div style="font-size: 0.75rem; color: var(--crimson-danger);">Intruders & unauthorized</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Enrolled Workforce</div>
+          <div class="stat-num" style="color: var(--cyan-primary);" id="stat-users">0</div>
+          <div style="font-size: 0.75rem; color: var(--cyan-primary);" id="stat-workforce-breakdown">0 Admin + 0 Employees</div>
+        </div>
+      </section>
+
+      <!-- Enrolled Personnel Directory -->
+      <section class="glass-panel">
+        <div class="panel-title">
+          <span id="directory-title">👥 Enrolled Personnel Directory</span>
+          <span style="font-size: 0.8rem; color: var(--cyan-primary);">Active in SFace Embedding Store</span>
+        </div>
+        <div class="users-grid" id="users-grid">
+          <div style="color: var(--text-muted);">Loading enrolled profiles...</div>
+        </div>
+      </section>
+
+      <!-- Enroll New Employee Form -->
+      <section class="enrollment-box">
+        <div class="panel-title">
+          <span>➕ Enroll / Register New Face Profile</span>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">Upload photo to calculate embeddings</span>
+        </div>
+        <form id="enroll-form" onsubmit="submitEnrollment(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Employee ID</label>
+              <input type="text" name="user_id" class="form-input" placeholder="e.g. EMP005" required>
+            </div>
+            <div class="form-group">
+              <label>Full Name</label>
+              <input type="text" name="name" class="form-input" placeholder="e.g. Elena Rostova" required>
+            </div>
+            <div class="form-group">
+              <label>Role</label>
+              <select name="role" class="form-input" required>
+                <option value="EMPLOYEE">EMPLOYEE (Level 1)</option>
+                <option value="ADMIN">ADMIN (Level 2)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Department</label>
+              <input type="text" name="department" class="form-input" placeholder="e.g. Data Science" required>
+            </div>
+            <div class="form-group">
+              <label>Face Portrait Photo</label>
+              <input type="file" name="file" class="form-input" accept="image/*" required>
+            </div>
+          </div>
+          <div style="margin-top: 1.25rem; display: flex; justify-content: flex-end;">
+            <button type="submit" class="primary-btn" style="flex: 0 1 240px;">
+              <span>💾</span> Enroll Profile
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Full Access Audit Log Table -->
+      <section class="glass-panel">
+        <div class="panel-title">
+          <span>📜 Comprehensive Gate Audit Logs</span>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="secondary-btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="loadAdminData()">
+              <span>🔄</span> Refresh
+            </button>
+            <button class="secondary-btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: rgba(244, 63, 94, 0.15); border-color: rgba(244, 63, 94, 0.4); color: #fda4af;" onclick="clearAllLogs()">
+              <span>🗑️</span> Clear All Logs
+            </button>
+          </div>
+        </div>
+        <div style="overflow-x: auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Log ID</th>
+                <th>Timestamp</th>
+                <th>Subject Name</th>
+                <th>Role</th>
+                <th>Department</th>
+                <th>Status</th>
+                <th>Confidence</th>
+                <th>Reason</th>
+                <th style="text-align: center;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="logs-tbody">
+              <tr>
+                <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading audit logs...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Edit Employee Modal -->
+  <div id="edit-modal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; padding: 1.5rem;">
+    <div style="background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 16px; padding: 2rem; max-width: 500px; width: 100%; box-shadow: 0 0 30px rgba(0, 240, 255, 0.25);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div style="font-size: 1.2rem; font-weight: 700; color: #fff;">✏️ Update Employee Profile</div>
+        <button onclick="closeEditModal()" style="background: transparent; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer;">&times;</button>
+      </div>
+      <form id="edit-form" onsubmit="submitEditEmployee(event)">
+        <input type="hidden" id="edit-user-id" name="old_user_id">
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          <div class="form-group">
+            <label>Employee ID (User ID)</label>
+            <input type="text" id="edit-new-user-id" name="new_user_id" class="form-input" required placeholder="e.g. ADM0001, EMP0001">
+            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">You can customize or update this Employee ID to your preference.</div>
+          </div>
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="edit-name" name="name" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label>Role</label>
+            <select id="edit-role" name="role" class="form-input" required>
+              <option value="EMPLOYEE">EMPLOYEE (Level 1)</option>
+              <option value="ADMIN">ADMIN (Level 2)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Department</label>
+            <input type="text" id="edit-department" name="department" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label>Update Face Portrait (Optional)</label>
+            <input type="file" id="edit-file" name="file" class="form-input" accept="image/*">
+            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">Leave blank to keep existing facial biometric embeddings.</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.75rem;">
+          <button type="button" class="secondary-btn" onclick="closeEditModal()">Cancel</button>
+          <button type="submit" class="primary-btn" style="flex: 0 1 180px;">💾 Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    async function loadAdminData() {
+      try {
+        // Load stats
+        const statsRes = await fetch('/api/stats');
+        const stats = await statsRes.json();
+        document.getElementById('stat-total').innerText = stats.total_scans;
+        document.getElementById('stat-granted').innerText = stats.granted_count;
+        document.getElementById('stat-denied').innerText = stats.denied_count;
+        document.getElementById('stat-users').innerText = stats.enrolled_users;
+
+        // Load users
+        const usersRes = await fetch('/api/users');
+        const usersData = await usersRes.json();
+        window.enrolledUsersList = usersData.users || [];
+        const usersGrid = document.getElementById('users-grid');
+        const buster = `?t=${Date.now()}`;
+        usersGrid.innerHTML = usersData.users.map((u, idx) => {
+          let photoSrc = u.photo_url || '/static/samples/default_avatar.svg';
+          if (photoSrc && !photoSrc.includes('?')) {
+            photoSrc += buster;
+          }
+          return `
+          <div class="user-card" style="display: flex; flex-direction: column;">
+            <img src="${photoSrc}" alt="${u.name}" onerror="this.onerror=null; this.src='/static/samples/default_avatar.svg';">
+            <div style="font-weight: 700; color: #fff; font-size: 1rem;">${u.name}</div>
+            <div style="display: flex; gap: 0.4rem; align-items: center;">
+              <span class="tag-pill ${u.role === 'ADMIN' ? 'tag-admin' : 'tag-employee'}">${u.role}</span>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">${u.user_id}</span>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-secondary);">${u.department}</div>
+            <div style="font-size: 0.72rem; color: var(--cyan-primary); margin-top: 0.2rem;">Clearance: Level ${u.access_level}</div>
+            <div style="display: flex; gap: 0.5rem; margin-top: auto; padding-top: 0.85rem; width: 100%;">
+              <button onclick="openEditModal(${idx})" class="secondary-btn" style="flex: 1; padding: 0.35rem 0.5rem; font-size: 0.75rem; text-align: center;">
+                ✏️ Edit
+              </button>
+              <button onclick="deleteUser('${u.user_id}', '${u.name.replace(/'/g, "\\'")}')" class="secondary-btn" style="flex: 1; padding: 0.35rem 0.5rem; font-size: 0.75rem; background: rgba(244, 63, 94, 0.15); border-color: rgba(244, 63, 94, 0.3); color: #fda4af; text-align: center;">
+                🗑️ Delete
+              </button>
+            </div>
+          </div>
+        `}).join('');
+
+        // Load logs
+        const logsRes = await fetch('/api/logs?limit=100');
+        const logsData = await logsRes.json();
+        const tbody = document.getElementById('logs-tbody');
+        if (logsData.logs.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">No logs recorded yet. Run a verification from the Access Kiosk!</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = logsData.logs.map(log => `
+          <tr>
+            <td style="color: var(--text-muted); font-family: monospace;">#${log.log_id}</td>
+            <td style="font-size: 0.8rem; color: var(--text-secondary);">${log.timestamp}</td>
+            <td style="font-weight: 600;">${log.name}</td>
+            <td>
+              ${log.role ? `<span class="tag-pill ${log.role === 'ADMIN' ? 'tag-admin' : 'tag-employee'}">${log.role}</span>` : '<span style="color: var(--text-muted);">-</span>'}
+            </td>
+            <td style="color: var(--text-secondary); font-size: 0.82rem;">${log.department || 'N/A'}</td>
+            <td>
+              <span class="badge-status ${log.status === 'GRANTED' ? 'granted' : 'denied'}">${log.status}</span>
+            </td>
+            <td style="color: var(--cyan-primary); font-weight: 600;">${log.confidence}%</td>
+            <td style="font-size: 0.8rem; color: var(--text-secondary);">${log.reason || '-'}</td>
+            <td style="text-align: center;">
+              <button onclick="deleteLog(${log.log_id})" title="Delete log entry" style="background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.3); color: #fda4af; padding: 0.25rem 0.6rem; border-radius: 6px; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(244, 63, 94, 0.3)'" onmouseout="this.style.background='rgba(244, 63, 94, 0.15)'">
+                🗑️ Delete
+              </button>
+            </td>
+          </tr>
+        `).join('');
+
+      } catch (err) {
+        console.error('Failed to load admin data:', err);
+      }
+    }
+
+    async function deleteLog(logId) {
+      if (!confirm(`Are you sure you want to delete log #${logId}?`)) return;
+      try {
+        const res = await fetch(`/api/logs/${logId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (res.ok) {
+          loadAdminData();
+        } else {
+          alert('Error: ' + (data.detail || 'Failed to delete log'));
+        }
+      } catch (err) {
+        alert('Failed to connect to backend: ' + err);
+      }
+    }
+
+    async function clearAllLogs() {
+      if (!confirm('Are you sure you want to delete ALL gate audit logs? This action cannot be undone.')) return;
+      try {
+        const res = await fetch('/api/logs', { method: 'DELETE' });
+        const data = await res.json();
+        if (res.ok) {
+          loadAdminData();
+        } else {
+          alert('Error: ' + (data.detail || 'Failed to clear logs'));
+        }
+      } catch (err) {
+        alert('Failed to connect to backend: ' + err);
+      }
+    }
+
+    async function submitEnrollment(e) {
+      e.preventDefault();
+      const form = document.getElementById('enroll-form');
+      const formData = new FormData(form);
+
+      try {
+        const res = await fetch('/api/enroll', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert('Success: ' + data.message);
+          form.reset();
+          loadAdminData();
+        } else {
+          alert('Enrollment Error: ' + (data.detail || data.message || 'Unknown error'));
+        }
+      } catch (err) {
+        alert('Failed to connect to enrollment service: ' + err);
+      }
+    }
+
+    function openEditModal(userIndex) {
+      const user = window.enrolledUsersList[userIndex];
+      if (!user) return;
+      document.getElementById('edit-user-id').value = user.user_id;
+      document.getElementById('edit-new-user-id').value = user.user_id;
+      document.getElementById('edit-name').value = user.name;
+      document.getElementById('edit-role').value = user.role.toUpperCase();
+      document.getElementById('edit-department').value = user.department;
+      document.getElementById('edit-file').value = '';
+      const modal = document.getElementById('edit-modal');
+      modal.style.display = 'flex';
+    }
+
+    function closeEditModal() {
+      document.getElementById('edit-modal').style.display = 'none';
+    }
+
+    async function submitEditEmployee(e) {
+      e.preventDefault();
+      const userId = document.getElementById('edit-user-id').value;
+      const form = document.getElementById('edit-form');
+      const formData = new FormData(form);
+
+      try {
+        const res = await fetch(`/api/users/${userId}/update`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert('Success: ' + data.message);
+          closeEditModal();
+          loadAdminData();
+        } else {
+          alert('Error: ' + (data.detail || data.message || 'Failed to update employee'));
+        }
+      } catch (err) {
+        alert('Failed to connect to backend: ' + err);
+      }
+    }
+
+    async function deleteUser(userId, userName) {
+      if (!confirm(`Are you sure you want to delete employee "${userName}" (${userId})?\n\nThis will remove their profile and all associated biometric facial embeddings.`)) return;
+      try {
+        const res = await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (res.ok) {
+          alert('Success: ' + data.message);
+          loadAdminData();
+        } else {
+          alert('Error: ' + (data.detail || data.message || 'Failed to delete employee'));
+        }
+      } catch (err) {
+        alert('Failed to connect to backend: ' + err);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', loadAdminData);
+  </script>
+</body>
+</html>

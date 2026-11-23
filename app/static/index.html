@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Access Control | Face Recognition System</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- Top Header Navigation -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">🛡️</div>
+      <div>
+        <div class="brand-title">SMART ACCESS CONTROL</div>
+        <div class="brand-sub">Biometric AI Neural Gate • Enterprise Grade Employer Access Control</div>
+      </div>
+    </div>
+    <nav class="nav-links">
+      <a href="/" class="nav-btn active"><span>🚪</span> Access Control</a>
+      <a href="/admin" class="nav-btn"><span>📊</span> Admin & Audit Logs</a>
+    </nav>
+  </header>
+
+  <!-- Main Content Grid -->
+  <main>
+    <div class="kiosk-grid">
+
+      <!-- Left Column: Camera Viewport & Controls -->
+      <section class="glass-panel">
+        <div class="panel-title">
+          <span>📹 Biometric Optical Scanner</span>
+          <span style="font-size: 0.8rem; color: var(--text-muted);" id="camera-state-text">Webcam Ready / Active</span>
+        </div>
+
+        <div class="scanner-container" id="scanner-box">
+          <!-- Video Stream -->
+          <video id="camera-video" autoplay playsinline muted></video>
+          <!-- Static Preview (Used when testing sample images or file upload) -->
+          <img id="preview-image" alt="Scanned Frame"
+            onerror="this.onerror=null; this.src='/static/samples/default_avatar.svg';">
+
+          <!-- Biometric HUD Reticle & Laser Sweep -->
+          <div class="hud-overlay" id="hud-overlay">
+            <div class="reticle-box" id="reticle-box">
+              <div class="reticle-corner c-tl"></div>
+              <div class="reticle-corner c-tr"></div>
+              <div class="reticle-corner c-bl"></div>
+              <div class="reticle-corner c-br"></div>
+              <div class="scan-laser" id="scan-laser"></div>
+            </div>
+            <div class="hud-status-badge" id="hud-badge">
+              <div class="pulsing-dot"></div>
+              <span id="hud-text">TRACKING FACIAL LANDMARKS</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Controls -->
+        <div class="controls-bar">
+          <button class="primary-btn" id="btn-scan" onclick="captureAndVerify()">
+            <span>⚡</span> SCAN & VERIFY IDENTITY
+          </button>
+          <button class="secondary-btn" onclick="toggleWebcam()">
+            <span>🔄</span> <span id="toggle-cam-text">Switch to Camera</span>
+          </button>
+          <label class="secondary-btn" style="margin: 0; cursor: pointer;">
+            <span>📁</span> Upload Photo
+            <input type="file" id="file-input" accept="image/*" style="display: none;"
+              onchange="handleFileUpload(event)">
+          </label>
+        </div>
+
+        <!-- 1-Click Simulation Strip -->
+        <div class="simulator-strip">
+          <div class="strip-label">
+            <span>🧪 Instant 1-Click Demo Profiles (Click to Simulate Entry):</span>
+            <span style="font-size: 0.72rem; color: var(--cyan-primary); font-weight: 500;" id="demo-audit-sync">Synced
+              with Recent Audit Trail</span>
+          </div>
+          <div class="sample-faces-row" id="sample-faces-row">
+            <div style="color: var(--text-muted); font-size: 0.8rem; padding: 0.5rem;">Loading profiles...</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Verification Results & Live Activity Log -->
+      <section style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+        <!-- Live Result Hologram Card -->
+        <div class="glass-panel result-card">
+          <div class="panel-title">
+            <span>🛡️ Gate Clearance Decision</span>
+            <span id="timestamp-clock" style="font-size: 0.8rem; color: var(--text-muted);">--:--:--</span>
+          </div>
+
+          <!-- Decision Banner -->
+          <div class="decision-banner idle" id="decision-banner">
+            <span id="decision-headline">SYSTEM STANDBY</span>
+            <span class="sub-message" id="decision-sub">Position face inside scanner reticle and trigger
+              verification.</span>
+          </div>
+
+          <!-- Personnel Profile Card -->
+          <div class="profile-badge" id="profile-badge">
+            <img src="/static/samples/adm0001.jpg" alt="Badge" class="profile-avatar" id="res-avatar"
+              style="display: none;" onerror="this.onerror=null; this.src='/static/samples/default_avatar.svg';">
+            <div class="profile-info">
+              <div class="profile-name" id="res-name">Awaiting Scan...</div>
+              <div class="profile-meta">
+                <span id="res-role-tag" class="tag-pill" style="display: none;"></span>
+                <span id="res-dept" style="color: var(--text-secondary);">No active subject</span>
+              </div>
+              <div id="res-access-level" style="font-size: 0.75rem; color: var(--cyan-primary); margin-top: 0.2rem;">
+              </div>
+            </div>
+          </div>
+
+          <!-- Match Confidence Meter -->
+          <div class="confidence-meter">
+            <div class="meter-header">
+              <span>Neural Embedding Similarity</span>
+              <span class="meter-val" id="confidence-val">0.0%</span>
+            </div>
+            <div class="meter-bar-track">
+              <div class="meter-bar-fill" id="confidence-bar"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Entry Feed Widget -->
+        <div class="glass-panel">
+          <div class="panel-title">
+            <span>📋 Real-time Gate Activity Log</span>
+            <a href="/admin" style="font-size: 0.78rem; color: var(--cyan-primary); text-decoration: none;">View Full
+              Log →</a>
+          </div>
+          <div class="activity-feed" id="recent-feed">
+            <div style="text-align: center; color: var(--text-muted); padding: 1rem;">Loading activity...</div>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <canvas id="hidden-canvas" style="display: none;"></canvas>
+
+  <script src="/static/app.js"></script>
+</body>
+
+</html>

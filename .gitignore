@@ -1,0 +1,21 @@
+# Virtual environments
+.venv/
+env/
+venv/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Temporary snapshots and logs
+app/static/snapshots/*.jpg
+!app/static/snapshots/.gitkeep
+*.log
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
